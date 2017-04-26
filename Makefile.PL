@@ -3,11 +3,11 @@ use ExtUtils::MakeMaker;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 WriteMakefile(
-    NAME              => 'Log::Any::Adapter::Multiplexor::0.01',
-    VERSION_FROM      => 'lib/Log/Any/Adapter/Multiplexor/0.01.pm', # finds $VERSION, requires EU::MM from perl >= 5.5
+    NAME              => 'Log::Any::Adapter::Multiplexor',
+    VERSION_FROM      => 'lib/Log/Any/Adapter/Multiplexor.pm', # finds $VERSION, requires EU::MM from perl >= 5.5
     PREREQ_PM         => {}, # e.g., Module::Name => 1.1
-    ABSTRACT_FROM     => 'lib/Log/Any/Adapter/Multiplexor/0.01.pm', # retrieve abstract from module
-    AUTHOR            => 'Departament of printing service <vrag@>',
+    ABSTRACT_FROM     => 'lib/Log/Any/Adapter/Multiplexor.pm', # retrieve abstract from module
+    AUTHOR            => 'Pavel Andryushin <vrag867@gmail.com>',
     #LICENSE           => 'perl',
     #Value must be from legacy list of licenses here
     #http://search.cpan.org/perldoc?Module%3A%3ABuild%3A%3AAPI
