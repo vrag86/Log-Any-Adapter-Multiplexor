@@ -10,20 +10,19 @@ use Carp 'croak';
 use Log::Any::Adapter;
 #Default adapter
 Log::Any::Adapter->set('Stdout');
-use Data::Printer;
  
 our $VERSION    = '0.01';
 
 my %LOG_LEVELS = (
-                    '0'     => 'EMERGENCY',
-                    '1'     => 'ALERT',
-                    '2'     => 'CRITICAL',
-                    '3'     => 'ERROR',
-                    '4'     => 'WARNING',
-                    '5'     => 'NOTICE',
-                    '6'     => 'INFO',
-                    '7'     => 'DEBUG',
-                    '8'     => 'TRACE',
+                    '0'     => 'emergency',
+                    '1'     => 'alert',
+                    '2'     => 'critical',
+                    '3'     => 'error',
+                    '4'     => 'warning',
+                    '5'     => 'notice',
+                    '6'     => 'info',
+                    '7'     => 'debug',
+                    '8'     => 'trace',
                 );
 
 sub new {
@@ -32,6 +31,8 @@ sub new {
     my %opt = @_;
     my $self = {};
     $self->{log} = $log;
+    $self->{adapters} = {};
+    $self->{compare} = {};
     bless $self, $class;
 
 
@@ -45,8 +46,13 @@ sub new {
     $log->{filter} = sub {
                                 no strict 'refs';
                                 my $log_level_name = $LOG_LEVELS{$_[1]} || 'trace';
-                                $log_level_name = lc($log_level_name);
-                                $self->{adapters}->{$log_level_name}->$log_level_name($_[2]);
+                                #Adding to hash compare
+                                $self->compare($log_level_name);
+
+#                                $self->{adapters}->{$log_level_name}->$log_level_name($_[2]);
+                                for my $log_level_compare (keys %{$self->{compare}}) {
+                                    $self->{adapters}->{$log_level_compare}->$log_level_compare($_[2]);
+                                }
                                 return '';
     };
 
@@ -68,6 +74,18 @@ sub set_logger {
     return 1;
 }
 
+sub compare {
+    my $self = shift;
+    for my $log_level (@_) {
+        $log_level = lc($log_level);
+        if (not grep {$_ eq $log_level} values %LOG_LEVELS) {
+            croak "Wrong log level: $log_level";
+        }
+        $self->{compare}->{$log_level} = 1;
+    }
+    return 1;
+}
+
 1;
 
 __END__
@@ -85,6 +103,7 @@ Log::Any::Adapter::Multiplexor - Run any Log::Any:Adapter together
  version 0.01
 
 =head1 SYNOPSIS
+
     #log warn message to a file, but info message to Stdout
     use Log::Any '$log';
     use Log::Any::Adapter;
@@ -108,12 +127,15 @@ Log::Any::Adapter::Multiplexor - Run any Log::Any:Adapter together
     $log->warning('Warning message');
 
 =head1 DESCRIPTION
+
     Log::Any::Adapter::Multiplexor connects any Log::Any::Adapter to use together
 
 =head1 Functions
+
     Specification function
 
 =head2 new
+
     my $multiplexor = Log::Any::Adapter::Multiplexor->new($log, %param);
 
     $log - $Log::Any::log object
@@ -122,14 +144,23 @@ Log::Any::Adapter::Multiplexor - Run any Log::Any:Adapter together
         value   => Arrayref ['Adapter name', @params]
 
 =head2 set_logger
+
     Set or override exists logger for Log::Any::Adapter::Multiplexor object
 
     $multiplexor->set_logger($log_level, $adapter, @param);
-    $log_level  => Log levels (e.g. warning, info, error)
-    $adapter    => Log::Any::Adapter for this log level (etc 'Log::Any::Adapter::File)
-    @param      => Adapter params (e.g. filename)
+        $log_level  => Log levels (e.g. warning, info, error)
+        $adapter    => Log::Any::Adapter for this log level (etc 'Log::Any::Adapter::File)
+        @param      => Adapter params (e.g. filename)
+
+=head1 DEPENDENCE
+
+L<Log::Any|Log::Any>, L<Log::Any::Adapter|Log::Any::Adapter>
 
 =head1 AUTHORS
+
+=over 4
+
+=item *
 
     Pavel Andryushin <vrag867@gmail.com>
 
