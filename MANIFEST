@@ -1,0 +1,8 @@
+Changes
+Makefile.PL
+MANIFEST
+README
+t/00-load.t
+t/10-logging.t
+t/Log-Any-Adapter-Multiplexor-0.01.t
+lib/Log/Any/Adapter/Multiplexor/0.01.pm
