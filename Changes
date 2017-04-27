@@ -6,3 +6,4 @@ Revision history for Perl extension Log::Any::Adapter::Multiplexor::0.01.
 0.02  Thu Apr 27 12:49:00 2017
 	- Added combine method for combine different log levels in one
 
+
