@@ -43,3 +43,23 @@ $message = 'Test warning log message in file';
 $log->warning($message);
 like(<$FW>, "/$message/", 'Output warning message in file');
 close $FW;
+
+#Test combine
+my ($FH1, $debug_temp_file1) = tempfile();
+my ($FH2, $debug_temp_file2) = tempfile();
+$message = 'Test combine log message in file';
+$multiplexor->set_logger('debug', 'Log::Any::Adapter::File', $debug_temp_file1);
+$multiplexor->set_logger('info', 'Log::Any::Adapter::File', $debug_temp_file2);
+$multiplexor->combine('debug', 'info');
+$log->info($message);
+like(<$FH1>, "/$message/", 'Output via combine in file1');
+like(<$FH2>, "/$message/", 'Output via combine in file2');
+
+#Test uncombine
+$message = 'Test uncombine log message in file';
+$multiplexor->uncombine();
+$log->debug($message);
+#Message must be in $FH1, but not in $FH2
+like(<$FH1>, "/$message/", 'Output via uncombine in file');
+unlike(<$FH2>, "/$message/", 'No output uncombine in file');
+

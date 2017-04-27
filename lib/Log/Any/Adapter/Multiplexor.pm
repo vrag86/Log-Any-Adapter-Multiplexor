@@ -32,7 +32,7 @@ sub new {
     my $self = {};
     $self->{log} = $log;
     $self->{adapters} = {};
-    $self->{compare} = {};
+    $self->{combine} = {};
     bless $self, $class;
 
 
@@ -46,14 +46,14 @@ sub new {
     $log->{filter} = sub {
                                 no strict 'refs';
                                 my $log_level_name = $LOG_LEVELS{$_[1]} || 'trace';
-                                #Adding to hash compare
-                                $self->compare($log_level_name);
+                                $self->{adapters}->{$log_level_name}->$log_level_name($_[2]);
 
 #                                $self->{adapters}->{$log_level_name}->$log_level_name($_[2]);
-                                for my $log_level_compare (keys %{$self->{compare}}) {
-                                    $self->{adapters}->{$log_level_compare}->$log_level_compare($_[2]);
+                                for my $log_level_combine (keys %{$self->{combine}}) {
+                                    $self->{adapters}->{$log_level_combine}->$log_level_combine($_[2]) if
+                                            $log_level_combine ne $log_level_name;
                                 }
-                                return '';
+                                return;
     };
 
     return $self;
@@ -74,15 +74,22 @@ sub set_logger {
     return 1;
 }
 
-sub compare {
+sub combine {
     my $self = shift;
-    for my $log_level (@_) {
+    my @param = @_;
+    for my $log_level (@param) {
         $log_level = lc($log_level);
         if (not grep {$_ eq $log_level} values %LOG_LEVELS) {
             croak "Wrong log level: $log_level";
         }
-        $self->{compare}->{$log_level} = 1;
+        $self->{combine}->{$log_level} = 1;
     }
+    return 1;
+}
+
+sub uncombine {
+    my $self = shift;
+    $self->{combine} = {};
     return 1;
 }
 
@@ -100,7 +107,7 @@ Log::Any::Adapter::Multiplexor - Run any Log::Any:Adapter together
 
 =head1 VERSION
 
- version 0.01
+ version 0.02
 
 =head1 SYNOPSIS
 
@@ -128,7 +135,7 @@ Log::Any::Adapter::Multiplexor - Run any Log::Any:Adapter together
 
 =head1 DESCRIPTION
 
-    Log::Any::Adapter::Multiplexor connects any Log::Any::Adapter to use together
+    C<Log::Any::Adapter::Multiplexor> connects any Log::Any::Adapter to use together
 
 =head1 Functions
 
@@ -152,6 +159,20 @@ Log::Any::Adapter::Multiplexor - Run any Log::Any:Adapter together
         $adapter    => Log::Any::Adapter for this log level (etc 'Log::Any::Adapter::File)
         @param      => Adapter params (e.g. filename)
 
+=head2 combine
+
+    Duplicated logs from different log levels
+
+    $multiplexor->combine('info', 'debug');
+    $log->info($message);
+    equals to
+    $log->info($message);
+    $log->debug($message);
+
+=head2 uncombine
+
+    Delete associations of log levels
+
 =head1 DEPENDENCE
 
 L<Log::Any|Log::Any>, L<Log::Any::Adapter|Log::Any::Adapter>
@@ -163,6 +184,8 @@ L<Log::Any|Log::Any>, L<Log::Any::Adapter|Log::Any::Adapter>
 =item *
 
     Pavel Andryushin <vrag867@gmail.com>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
